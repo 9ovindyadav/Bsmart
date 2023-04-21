@@ -106,7 +106,7 @@ export const addToPlaylist = (id)=> async(dispatch)=>{
                 "Content-Type":"application/json",
             },withCredentials: true,
                  });
-console.log(data);
+
         dispatch({ type: "addtoPlaylistSuccess", payload: data.message });
     } catch (error) {
         dispatch({ type: "addtoPlaylistFail", payload: error.response.data.message});
@@ -117,10 +117,9 @@ export const removeFromPlaylist = (id)=> async(dispatch)=>{
 
     try {
         dispatch({type:"removeFromPlaylistRequest"});
-console.log(id);
-        const {data} = await axios.delete(`${server}/removefromplaylist?id=${id}`,{
-            headers:{withCredentials: true,}});
-console.log(data);
+
+        const {data} = await axios.delete(`${server}/removefromplaylist?id=${id}`,{withCredentials: true});
+
         dispatch({ type: "removeFromPlaylistSuccess", payload: data.message });
     } catch (error) {
         dispatch({ type: "removeFromPlaylistFail", payload: error.response.data.message});

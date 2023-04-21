@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { getAllCourses } from "../../Redux/Actions/course";
-import { toast } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { addToPlaylist } from "../../Redux/Actions/profile";
 import { loadUser } from "../../Redux/Actions/user";
 
