@@ -1,6 +1,8 @@
 import { Button, Container, HStack, Heading, Input, VStack,Text, Box, Avatar, FormLabel } from '@chakra-ui/react'
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { register } from '../../Redux/Actions/user'
 
 export const fileUploadCss = {
     cursor :"pointer",
@@ -23,7 +25,9 @@ const Register = () => {
     const [userName,setuserName] = useState();
     const [imgPrev,setimgPrev] = useState();
     const [image,setImage] = useState();
-    
+
+    const dispatch = useDispatch();
+
 const imgUploadHandler = (e)=>{
      const file = e.target.files[0]; // first file only
 
@@ -31,16 +35,27 @@ const imgUploadHandler = (e)=>{
 
     reader.readAsDataURL(file);
 
-    reader.onload = ()=>(
-         setimgPrev(reader.result) //it has only url of image
-         ,setImage(file)  // file uploaded to it
-    )
+    reader.onload = ()=>{
+         setimgPrev(reader.result); //it has only url of image
+         setImage(file);  // file uploaded to it
+}
     }
 
+    const submitHandler = (e)=>{
+        e.preventDefault();
+        const myForm = new FormData();
+        
+        myForm.append("name",userName);
+        myForm.append("email",email);
+        myForm.append("password",password);
+        myForm.append("file",image);
+        
+        dispatch(register(myForm));
+    }
 
   return (
     <Container h={"100vh"}>
-    <form style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",height:"100%"}}>
+    <form onSubmit={submitHandler} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",height:"100%"}}>
     <VStack h={"full"} w={"full"} justifyContent={"center"} spacing={"4"}>
         
     <Heading pb={"2"} children="Registration"/>

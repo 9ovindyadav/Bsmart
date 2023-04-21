@@ -1,40 +1,43 @@
 import { Avatar, Container, HStack, Heading, Stack, VStack,Text, Button,Image, Modal, ModalOverlay, ModalContent, ModalBody, ModalCloseButton, useDisclosure, Input, ModalHeader, ModalFooter } from '@chakra-ui/react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaHorseHead } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { fileUploadCss } from '../auth/register';
+import { useDispatch, useSelector } from 'react-redux';
+import { removeFromPlaylist, updateprofilePicture } from '../../Redux/Actions/profile';
+import { loadUser } from '../../Redux/Actions/user';
+import { toast } from 'react-hot-toast';
 
-const Profile = () => {
-
-const user = {
-        _id: "fhjdsj1",
-        name: "Govind",
-        role: "adin",
-        email: "govindsvyadav@gmail.com",
-        username: "9ovindyadav",
-        joiningDate: String(new Date().toISOString()),
-        subscription:{
-            status: "active",
-        },
-        playlist: [
-            {
-                course:"hgsdk",
-                poster: "https://icons-for-free.com/iconfiles/png/512/command+develop+javascript+language+programming+software+icon-1320165727225308896.png",
-            }
-        ]
-        
-    };
-
-    const removeFromPlaylistHandler = (id)=>(
-            console.log(id)
-    )
-
+const Profile = ({user}) => {
+    
     const {isOpen,onClose,onOpen} = useDisclosure();
 
-    const changeImageSubmitHandler = (e,image)=>(
-            e.preventDefault(),
-            console.log(image)
-    )
+    const dispatch = useDispatch();
+const {loading,error,message} = useSelector(state=>state.profile)
+
+const removeFromPlaylistHandler = async (id)=>{
+    console.log(id);
+   await dispatch(removeFromPlaylist(id));
+   dispatch(loadUser());
+}
+useEffect(()=>{
+    if(error){
+      toast.error(error);
+      dispatch({type:"clearError"});
+    };
+    if(message){
+      toast.success(message);
+      dispatch({type:"clearMessage"});
+    }
+    },[dispatch,error,message]);
+
+    const changeImageSubmitHandler = async (e,image)=>{
+        e.preventDefault();
+        const myForm = new FormData();
+        myForm.append("file",image);
+       await dispatch(updateprofilePicture(myForm));
+       dispatch(loadUser());
+    }
 
   return (
     <Container minH={"100vh"} boxShadow={"lg"} maxW={"container.lg"} py={"8"} >
@@ -51,7 +54,7 @@ const user = {
                padding={"10"}
                >
             <VStack spacing={"5"}>
-                 <Avatar src={""} size={"xl"}/>
+                 <Avatar src={ user.avatar.url} size={"xl"}/>
                  <Button onClick={onOpen} variant={"link"}  color={"yellow.500"}>Change Photo</Button>
                  <Heading fontSize={"xl"} 
                          children={user.name}
@@ -72,18 +75,7 @@ const user = {
                          fontWeight={"medium"}
                     />
                 </HStack>
-                <HStack>
-                    <Heading children="Username :"
-                         fontFamily={"sans-serif"}
-                         fontSize={"xl"}
-                         fontWeight={"medium"}
-                    />
-                    <Heading children={user.username}
-                         fontFamily={"sans-serif"}
-                         fontSize={"xl"}
-                         fontWeight={"medium"}
-                    />
-                </HStack>
+               
                 <HStack>
                     <Heading children="Email :"
                          fontFamily={"sans-serif"}
@@ -102,7 +94,8 @@ const user = {
                          fontSize={"xl"}
                          fontWeight={"medium"}
                     />
-                    <Heading children={user.joiningDate.split("T")[0]}
+            
+                    <Heading children={user.createdAt.split('T')[0]}
                          fontFamily={"sans-serif"}
                          fontSize={"xl"}
                          fontWeight={"medium"}
@@ -116,7 +109,7 @@ const user = {
                          fontWeight={"medium"}
                     />
                     {
-                        user.subscription.status === "active" ? (
+                       (user.subscription && user.subscription.status === "active") ? (
                             <Button color="yellow.600" variant={"unstyled"}>Cancel Subscription</Button>
                         ):(
                             <Link to={"/subscribe"}>
@@ -156,7 +149,7 @@ const user = {
                                 <Link to={"/courses/${id}"}>
                                     <Button size={"sm"} colorScheme='yellow'>Watch Now</Button>
                                 </Link>
-                                <Button onClick={()=>removeFromPlaylistHandler(item.course)} size={"sm"} colorScheme='yellow'>Remove</Button>
+                                <Button isLoading={loading} onClick={()=>removeFromPlaylistHandler(item.course)} size={"sm"} colorScheme='yellow'>Remove</Button>
                             </HStack>
                         </VStack>
                     ))
@@ -165,14 +158,14 @@ const user = {
             ) 
           }
 
-          <ChangePhotoBox changeImageSubmitHandler={changeImageSubmitHandler} isOpen={isOpen} onClose={onClose}/>
+          <ChangePhotoBox loading={loading} changeImageSubmitHandler={changeImageSubmitHandler} isOpen={isOpen} onClose={onClose}/>
     </Container>
   )
 }
 
 export default Profile;
 
-function ChangePhotoBox({isOpen,onClose,changeImageSubmitHandler}){
+function ChangePhotoBox({isOpen,onClose,changeImageSubmitHandler,loading}){
 
     const [image,setImage] = useState();
     const [imgPrev,setimgPrev] = useState();
@@ -213,7 +206,7 @@ function ChangePhotoBox({isOpen,onClose,changeImageSubmitHandler}){
                       { imgPrev && <Avatar src={imgPrev} boxSize={"48"}/>}
                       <Input onChange={changeImage} type='file' css={{"&::file-selector-button": fileUploadCss }}/>
                       <HStack justifyContent={"center"} my={"5"} spacing={"10"}>
-                      <Button w={"6rem"} type="submit"  colorScheme='yellow'>Change</Button>
+                      <Button isLoading={loading} w={"6rem"} type="submit"  colorScheme='yellow'>Change</Button>
                       <Button w="6rem" variant={"ghost"}  onClick={onCloseHandler}>Close</Button>
                       </HStack>
                     </form>

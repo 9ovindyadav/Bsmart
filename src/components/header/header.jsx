@@ -4,6 +4,8 @@ import {RiDashboardFill, RiLogoutBoxLine, RiMenu5Fill} from "react-icons/ri"
 import {Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, DrawerOverlay, VStack, useDisclosure, HStack } from '@chakra-ui/react'
 import { GrBottomCorner } from 'react-icons/gr'
 import {Link} from "react-router-dom"
+import { useDispatch } from 'react-redux'
+import { logOut } from '../../Redux/Actions/user'
 
 
 
@@ -12,13 +14,10 @@ import {Link} from "react-router-dom"
 
 
 
-const Header = () => {
+const Header = ({isAuthenticated = false, user }) => {
 
 const {isOpen, onClose,onOpen} = useDisclosure();
-const userAuthonticated = true ;
-const user = {
-    role : "admin",
-}
+
 
 const DrawerButton = ( {url,title})=>(
     <Link onClick={onClose} to={url}>
@@ -26,9 +25,12 @@ const DrawerButton = ( {url,title})=>(
     </Link>
 )
 
+
+const dispatch = useDispatch();
 const logOutHandler = ()=>{
-    console.log("logout");
+    
     onClose();
+    dispatch(logOut());
 }
 
   return (<>
@@ -51,7 +53,7 @@ const logOutHandler = ()=>{
                <VStack>
                 <HStack position={"absolute"} width={"80%"} justifyContent={"space-evenly"} bottom={"2rem"}>
                     {
-                        userAuthonticated ? (<>
+                        isAuthenticated ? (<>
                          <VStack>
                             <HStack>
                             <Link onClick={onClose} to="/profile">

@@ -1,16 +1,23 @@
 import { Button, Container, HStack, Heading, Input, VStack,Text } from '@chakra-ui/react'
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom'
+import { login } from '../../Redux/Actions/user';
 
 const Login = () => {
 
     const [email,setEmail] = useState();
     const [password,setPassword] = useState();
-    console.log(email);
+
+    const dispatch = useDispatch();
+    const submitHandler = (e)=>{
+      e.preventDefault();
+      dispatch(login(email,password));
+    };
 
   return (
     <Container h={"100vh"}>
-        <form style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",height:"100%"}}>
+        <form onSubmit={submitHandler} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",height:"100%"}}>
         <VStack h={"full"} justifyContent={"center"}>
         <Heading pb={"8"} children="Login"/>
         
