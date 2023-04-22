@@ -8,7 +8,8 @@ const CourseModal = ({isOpen,
                       Courseid,
                       deleteButtonHandler,
                       courseTitle,
-                      lecture=[1,2,3,4,5,6,],
+                      lectures=[],
+                      loading,
                       addLectureHandler}) => {
 
 
@@ -57,15 +58,16 @@ const videoUploadHandler = (e)=>{
                 <Heading size={"lg"} children="Lectures"/>
 
                 {
-                    lecture.map((item,index)=>(
+                    lectures.map((item,index)=>(
                         <VideoCard
                         key={index}
-                      title={courseTitle}
+                      title={item.title}
                       num={index+1}
-                      description={"This is a intro video to React"}
-                      lectureId={"dgskjgasdgj"}
+                      description={item.description}
+                      lectureId={item._id}
                       courseId={Courseid}
                       deleteButtonHandler={deleteButtonHandler}
+                      loading={loading}
                 />
                     ))
                 }
@@ -108,7 +110,7 @@ const videoUploadHandler = (e)=>{
                       ></video>
             )
           }
-          <Button width={"full"} colorScheme='purple' type='submit' >Upload</Button>
+          <Button isLoading={loading} width={"full"} colorScheme='purple' type='submit' >Upload</Button>
     </VStack>
 
     </form>
@@ -127,7 +129,7 @@ const videoUploadHandler = (e)=>{
 
 export default CourseModal;
 
-function VideoCard({title,num,description,lectureId,courseId,deleteButtonHandler}){
+function VideoCard({title,num,description,lectureId,courseId,deleteButtonHandler,loading}){
     return(
         <Stack direction={["column","row"]}
                   my={"8"}
@@ -140,7 +142,7 @@ function VideoCard({title,num,description,lectureId,courseId,deleteButtonHandler
                 <Heading size={"sm"} children={`#${num} ${title}`}/>
                 <Text children={description}/>
             </Box>
-            <Button color={"purple.600"} 
+            <Button isLoading={loading} color={"purple.600"} 
                   onClick={()=>deleteButtonHandler(courseId,lectureId)}
             ><RiDeleteBin7Fill/></Button>
         </Stack>

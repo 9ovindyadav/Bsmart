@@ -14,10 +14,10 @@ const UpdateProfile = ({user}) => {
 const dispatch = useDispatch();
 const {loading} = useSelector(state=>state.profile)
 
-    const submitHandler = async (e)=>{
+    const submitHandler = (e)=>{
       e.preventDefault();
      
-       await dispatch(updateprofile(name,email));
+     dispatch(updateprofile(name,email));
       
        dispatch(loadUser());
        navigate("/profile");

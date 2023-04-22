@@ -1,43 +1,42 @@
 import { Box, Grid, Heading, VStack ,Text, background} from '@chakra-ui/react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import indroVideo from "../assets/videos/title.mp4"
-const CoursePage = () => {
+import { useDispatch, useSelector } from 'react-redux';
+import { Navigate, useParams } from 'react-router-dom';
+import { getCourseLectures } from '../Redux/Actions/course';
+import Loader from '../components/Loader/loader';
+
+
+const CoursePage = ({user}) => {
 
 const [lectureNumber,setLectureNumber] = useState(0);
 
-const lectures = [
-    {
-        _id:"sdhkasjdgk",
-        title: "JavaScript",
-        description: "djhaskgdasdgkljsladk",
-        video: {
-            url: "https:hfdakja"
-        }
-    },
-    {
-        _id:"sdhkasjdgk2",
-        title: "JavaScript2",
-        description: "djhaskgdasdgkljsladk",
-        video: {
-            url: "https:hfdakja"
-        }
-    },
-    {
-        _id:"sdhkasjdgk3",
-        title: "JavaScript3",
-        description: "djhaskgdasdgkljsladk",
-        video: {
-            url: "https:hfdakja"
-        }
-    },
-]
+const {lectures,loading} = useSelector(state=>state.course);
+
+
+const dispatch = useDispatch();
+const params = useParams();
+
+useEffect(()=>{
+ dispatch(getCourseLectures(params.id));   
+},[dispatch,params.id]);
+
+
+if(user.role !== "admin" && (user.subscription===undefined || user.subscription.status !== "active")){
+return <Navigate to={"/subscribe"}/>
+}
 
   return (
-    <Grid minH={"100vh"} templateColumns={["1fr","3fr 1.5fr"]}>
     
-            <Box  alignSelf={"flex-start"} boxSize={"2xl"} w={"80%"} ml={"20"} mt={"10"}>
+        loading ? <Loader/> : (<>
+            <Grid minH={"100vh"} templateColumns={["1fr","3fr 1.5fr"]}>
+    
+           {
+            lectures && lectures.length > 0 ? (
+                <>
+                 <Box  alignSelf={"flex-start"} boxSize={"2xl"} w={"80%"} ml={"20"} mt={"10"}>
             <video 
-                 src={indroVideo}
+                 src={lectures[lectureNumber].video.url}
                  controls
                 
                  controlsList="nodownload noremoteplayback"
@@ -70,8 +69,13 @@ const lectures = [
                 ))
             }
         </VStack>
+                </>
+            ) : <Heading children="No lectures"/>
+           }
     </Grid>
+            </>)
+    
   )
 }
 
-export default CoursePage
+export default CoursePage;

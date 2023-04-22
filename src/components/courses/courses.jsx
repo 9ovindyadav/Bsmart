@@ -1,7 +1,7 @@
 import { Box,Image ,Button, Container, HStack, Heading,Input,Stack,Text, VStack } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { getAllCourses } from "../../Redux/Actions/course";
 import toast from "react-hot-toast";
 import { addToPlaylist } from "../../Redux/Actions/profile";
@@ -16,10 +16,10 @@ const CourseCard = ({title,description,imgSrc,id,addtoplaylistHandler,creator,le
         <Heading fontSize={"2xl"} fontFamily={"body"} children={title}/>
         <Text fontSize={"sm"} children={description}/>
         <Text fontSize={"sm"} children={creator}/>
-        <Text fontSize={"sm"} children={`Lectures ${lectureCount}`}/>
-        <Text fontSize={"sm"} children={`Views ${views}`}/>
+        <Text fontSize={"sm"} children={`Lectures -${lectureCount}`}/>
+        <Text fontSize={"sm"} children={`Views -${views}`}/>
         <HStack>
-          <Link to="/courses/id">
+          <Link to={`/course/${id}`}>
           <Button colorScheme="yellow">
             <Text children="Enroll Now"/>
           </Button>
@@ -38,7 +38,7 @@ export function Courses(){
     const [category,setCategory] = useState();
 
     const dispatch = useDispatch();
-
+const params = useParams();
     const Category = ["Web Development",
                       "Android App Development",
                       "Desktop App Development",
@@ -48,10 +48,10 @@ export function Courses(){
                     ];
 
             
-const addtoplaylistHandler = async(courseId)=>{
+const addtoplaylistHandler = (courseId)=>{
 
-  await dispatch(addToPlaylist(courseId));
-  dispatch(loadUser());
+  dispatch(addToPlaylist(courseId));
+
 }
 
 const {loading,courses,message,error} = useSelector(state=>state.course);
@@ -68,7 +68,7 @@ useEffect(()=>{
         dispatch({type:"clearMessage"});
     };
     dispatch(getAllCourses(category,keyword));
-},[category,keyword,dispatch,message]);
+},[category,keyword,dispatch,message,error]);
 
     return(
         <Container centerContent minH={"95vh"} maxW={"container.xl"} py={"8"} px={"10"} m={"5"} boxSize={"borderBox"}>

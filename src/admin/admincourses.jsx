@@ -1,84 +1,122 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { AdminSideBar } from './dashboard'
 import { Box,Image, Button, Grid, HStack, Heading, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, useDisclosure } from '@chakra-ui/react'
 import { RiDeleteBin7Fill } from 'react-icons/ri'
 import CourseModal from './courseModal'
+import { useDispatch, useSelector } from 'react-redux'
+import { getAllCourses, getCourseLectures } from '../Redux/Actions/course'
+import { addLecture, deleteCourse, deleteLecture } from '../Redux/Actions/admin'
+import { toast } from 'react-hot-toast'
+import Loader from "../components/Loader/loader";
 
 const AdminCourses = () => {
 
-const users = [
-  {
-     _id: "sfhjsfgskjjksfd",
-     title: "Education App",
-     category: "Web development",
-     createdBy: "Govind",
-     poster: {
-      url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7rf39_0voDxAQV_CJIGeY5s-1qUY3gJ4B9LYwdFtk8A051st-xOFoEzBwhsYR3PZ3F0Y&usqp=CAU" },
-     views: 400,
-     nuofVideos: 15,
-  },
-]
+  const dispatch = useDispatch();
+  const {courses,lectures} = useSelector(state=>state.course);
 
+  const {loading,error,message} = useSelector(state=>state.admin)
 const {isOpen,onOpen,onClose} = useDisclosure();
 
-const courseDetailHandler = (courseid)=>(
-  onOpen()
-)
+const [courseId,setCourseId] = useState("");
+const [courseTitle,setcourseTitle] = useState("");
 
-const deleteCourseHandler = (courseid)=>(
-  console.log(courseid)
-)
+const courseDetailHandler = (courseId,title)=>{
+  onOpen();
+  dispatch(getCourseLectures(courseId));
+  setCourseId(courseId);
+  setcourseTitle(title);
+}
 
-const deleteLectureButtonHandler = (courseId,lectureId)=>(
-  console.log(lectureId),
-  console.log(courseId)
-)
+const deleteCourseHandler = (courseId)=>{
+  dispatch(deleteCourse(courseId));
+}
+  
 
-const addLectureHandler = (e,courseId,title,description,video)=>(
-  e.preventDefault()
-)
+const deleteLectureButtonHandler = async (courseId,lectureId)=>{
+
+  await dispatch(deleteLecture(courseId,lectureId));
+  dispatch(getCourseLectures(courseId));
+}
+
+
+const addLectureHandler = async (e,courseId,title,description,video)=>{
+  e.preventDefault();
+  const myForm = new FormData();
+        
+  myForm.append("title",title);
+  myForm.append("description",description);
+  myForm.append("file",video);
+  
+ await dispatch(addLecture(courseId,myForm));
+ dispatch(getCourseLectures(courseId));
+
+}
+
+
+
+useEffect(()=>{
+
+  if(error){
+    toast.error(error);
+    dispatch({type:"clearError"});
+  }
+  if(message){
+    toast.success(message);
+    dispatch({type:"clearMessage"});
+  }
+  dispatch(getAllCourses());
+
+},[dispatch,message,error]);
 
   return (
     <Grid h={"100vh"} templateColumns={["1fr","5fr 1fr"]}>
-    <Box p={['0','8']} overflow={"auto"}>
+    {
+      loading ? <Loader color='purple.500'/> : (
+        <>
+        <Box p={['0','8']} overflow={"auto"}>
 
-      <Heading fontWeight={"medium"} children="All Users" my={"16"} textAlign={["center","left"]}/>
-      <TableContainer width={["100vw","full"]}>
-        <Table variant={"simple"} size={"md"}>
-          <TableCaption>All Available Courses in the Database</TableCaption>
+<Heading fontWeight={"medium"} children="All Course" my={"16"} textAlign={["center","left"]}/>
+<TableContainer width={["100vw","full"]}>
+  <Table variant={"simple"} size={"sm"}>
+    <TableCaption>All Available Courses in the Database</TableCaption>
 
-          <Thead>
-            <Tr>
-            <Th>#Id</Th>
-              <Th>Poster</Th>
-              <Th>Title</Th>
-              <Th>Category</Th>
-              <Th>Creator</Th>
-              <Th isNumeric>Views</Th>
-              <Th isNumeric>Lectures</Th>
-              <Th isNumeric>Action</Th>
-            </Tr>
-          </Thead>
+    <Thead>
+      <Tr>
+      <Th>#Id</Th>
+        <Th>Poster</Th>
+        <Th>Title</Th>
+        <Th>Category</Th>
+        <Th>Creator</Th>
+        <Th isNumeric>Views</Th>
+        <Th isNumeric>Lectures</Th>
+        <Th isNumeric>Action</Th>
+      </Tr>
+    </Thead>
 
-          <Tbody>
-            {
-              users.map((item)=>(
-                <UserRow courseDetailHandler={courseDetailHandler} deleteCourseHandler={deleteCourseHandler} key={item._id} item={item}/>
-              ))
-            }
-          </Tbody>
-        </Table>
-      </TableContainer>
+    <Tbody>
+      {
+        courses.map((item)=>(
+          <UserRow courseDetailHandler={courseDetailHandler} deleteCourseHandler={deleteCourseHandler} loading={loading} key={item._id} item={item}/>
+        ))
+      }
+    </Tbody>
+  </Table>
+</TableContainer>
 
 
 <CourseModal isOpen={isOpen} 
-             onClose={onClose} 
-             id={"dsdjags"} 
-             addLectureHandler={addLectureHandler} 
-             deleteButtonHandler={deleteLectureButtonHandler} 
-             coursetitle="React Course"
-             />
-    </Box>
+       onClose={onClose} 
+       Courseid={courseId} 
+       addLectureHandler={addLectureHandler} 
+       deleteButtonHandler={deleteLectureButtonHandler} 
+       courseTitle={courseTitle}
+       lectures={lectures}
+       loading={loading}
+       />
+</Box>
+        </>
+      )
+    }
    
 <AdminSideBar/>
 </Grid>
@@ -87,7 +125,7 @@ const addLectureHandler = (e,courseId,title,description,video)=>(
 
 export default AdminCourses;
 
-function UserRow({item,deleteCourseHandler,courseDetailHandler}){
+function UserRow({item,deleteCourseHandler,courseDetailHandler,loading}){
   return(
     <Tr>
       <Td>#{item._id}</Td>
@@ -100,10 +138,10 @@ function UserRow({item,deleteCourseHandler,courseDetailHandler}){
       <Td>{item.views}</Td>
 
       <Td isNumeric>
-          <Button onClick={()=>courseDetailHandler(item._id)} variant={"outline"} color={"purple.500"}>View</Button>
+          <Button isLoading={loading} onClick={()=>courseDetailHandler(item._id, item.title)} variant={"outline"} color={"purple.500"}>View</Button>
           </Td>
           <Td isNumeric>
-          <Button onClick={()=>deleteCourseHandler(item._id)} color={"purple.600"}><RiDeleteBin7Fill/></Button>
+          <Button isLoading={loading} onClick={()=>deleteCourseHandler(item._id)} color={"purple.600"}><RiDeleteBin7Fill/></Button>
           </Td>
       
     </Tr>

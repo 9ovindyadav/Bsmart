@@ -14,4 +14,17 @@ export const getAllCourses = (category="",keyword="")=> async(dispatch)=>{
     }
 };
 
+export const getCourseLectures = (Id)=> async(dispatch)=>{
+
+    try {
+        dispatch({type:"getLecturesRequest"});
+
+        const {data} = await axios.get(`${server}/course/${Id}`,{withCredentials: true});
+
+        dispatch({ type: "getLecturesSuccess", payload: data.lectures });
+    } catch (error) {
+        dispatch({ type: "getLecturesFail", payload: error.response.data.message});
+    }
+};
+
 

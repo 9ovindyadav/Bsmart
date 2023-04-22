@@ -5,20 +5,20 @@ import { Link } from 'react-router-dom';
 import { fileUploadCss } from '../auth/register';
 import { useDispatch, useSelector } from 'react-redux';
 import { removeFromPlaylist, updateprofilePicture } from '../../Redux/Actions/profile';
-import { loadUser } from '../../Redux/Actions/user';
-import { toast } from 'react-hot-toast';
+import { cancelSubscription, loadUser } from '../../Redux/Actions/user';
+import toast from 'react-hot-toast';
 
 const Profile = ({user}) => {
     
     const {isOpen,onClose,onOpen} = useDisclosure();
 
     const dispatch = useDispatch();
-const {loading,error,message} = useSelector(state=>state.profile)
+const {loading,error,message} = useSelector(state=>state.profile);
+const {loading:subscriptionLoading,error:subscriptionError,message:subscriptionMessage} = useSelector(state=>state.subscription);
 
-const removeFromPlaylistHandler = async (id)=>{
-    console.log(id);
-   await dispatch(removeFromPlaylist(id));
-   dispatch(loadUser());
+const removeFromPlaylistHandler = (id)=>{
+ dispatch(removeFromPlaylist(id));
+ dispatch(loadUser());
 }
 useEffect(()=>{
     if(error){
@@ -29,15 +29,31 @@ useEffect(()=>{
       toast.success(message);
       dispatch({type:"clearMessage"});
     }
-    },[dispatch,error,message]);
 
-    const changeImageSubmitHandler = async (e,image)=>{
+    if(subscriptionError){
+        toast.error(subscriptionError);
+        dispatch({type:"clearError"});
+      };
+      if(subscriptionMessage){
+        toast.success(subscriptionMessage);
+        dispatch({type:"clearMessage"});
+      }
+
+
+    
+    },[dispatch,error,message,loading,subscriptionLoading,subscriptionMessage,subscriptionError]);
+
+    const changeImageSubmitHandler = (e,image)=>{
         e.preventDefault();
         const myForm = new FormData();
         myForm.append("file",image);
-       await dispatch(updateprofilePicture(myForm));
-       dispatch(loadUser());
+     dispatch(updateprofilePicture(myForm));
+      dispatch(loadUser());
     }
+
+    const cancelSubscriptionHandler = ()=>{
+        dispatch(cancelSubscription());
+    };
 
   return (
     <Container minH={"100vh"} boxShadow={"lg"} maxW={"container.lg"} py={"8"} >
@@ -49,7 +65,7 @@ useEffect(()=>{
                     Profile
         </Heading>
         <Stack direction={['column','row']}
-               justifyContent={"center"}
+               mx={"20"}
                spacing={"20"}
                padding={"10"}
                >
@@ -110,10 +126,10 @@ useEffect(()=>{
                     />
                     {
                        (user.subscription && user.subscription.status === "active") ? (
-                            <Button color="yellow.600" variant={"unstyled"}>Cancel Subscription</Button>
+                            <Button onClick={cancelSubscriptionHandler} isLoading={subscriptionLoading} colorScheme='red'>Cancel Subscription</Button>
                         ):(
                             <Link to={"/subscribe"}>
-                                <Button color="red.600" variant={"unstyled"}>Subscribe Now</Button>
+                                <Button colorScheme='yellow'>Subscribe Now</Button>
                             </Link>
                         )
                     }

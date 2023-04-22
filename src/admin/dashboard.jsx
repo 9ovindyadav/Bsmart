@@ -1,10 +1,11 @@
 import { Box, Button, Grid, Icon, VStack,Text, Heading, Stack, HStack, Progress } from '@chakra-ui/react'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { RiAddCircleFill, RiArrowDownLine, RiArrowUpLine, RiDashboardFill } from 'react-icons/ri';
 import { Link, useLocation } from 'react-router-dom';
 import { DoubnutChart, LineChart } from './chart';
-
-
+import {useDispatch, useSelector} from "react-redux";
+import { getDashboardStats } from '../Redux/Actions/admin';
+import Loader from "../components/Loader/loader";
 
 
 const DataBox = ({title,qty,qtyPercent,profit})=>(
@@ -41,20 +42,39 @@ const Bar = ({title,value,profit})=>(
   </Box>
 )
 
-const dashboard = () => {
+const Dashboard = () => {
 
 
+const {loading,
+  stats,
+  usersCount,
+subscriptionCount,
+viewsCount,
+usersPercentage,
+subscriptionPercentage,
+viewsPercentage,
+usersProfit,
+subscriptionProfit,
+viewsProfit,   } = useSelector(state=>state.admin);
+
+  const dispatch = useDispatch();
+  useEffect(()=>{
+  dispatch(getDashboardStats());
+},[]);
 
   return (
     <Grid minH={"100vh"} templateColumns={["1fr","5fr 1fr"]}>
-        <Box
+        {
+          loading || !stats ? <Loader color='purple.500'/> : (
+            <>
+            <Box
         boxSizing="border-box"
         py={"16"}
         px={['4','0']}
         >
       <Text textAlign={"center"} 
             opacity={"0.9"} 
-            children={`Last change was made on ${String(new Date()).split("G")[0]}`}
+            children={`Last change was made on ${String(new Date(stats[11].createdAt)).split("G")[0]}`}
        />
 
        <Heading children="Dashboard"
@@ -67,9 +87,9 @@ const dashboard = () => {
               minH={"24"}
               justifyContent={"space-evenly"} 
        >
-        <DataBox title="View" qty={234} qtyPercent={80} profit={true}  />
-        <DataBox title="Users" qty={600} qtyPercent={62} profit={true}  />
-        <DataBox title="Subscribers" qty={200} qtyPercent={20} profit={false}  />
+        <DataBox title="View" qty={viewsCount} qtyPercent={viewsPercentage} profit={viewsProfit}  />
+        <DataBox title="Users" qty={usersCount} qtyPercent={usersPercentage} profit={usersProfit}  />
+        <DataBox title="Subscribers" qty={subscriptionCount} qtyPercent={subscriptionPercentage} profit={subscriptionProfit} />
        </Stack>
 
 <Box 
@@ -81,7 +101,7 @@ const dashboard = () => {
   <Heading children="Views Graph" size={"md"} textAlign={["center","left"]} pt={["8","0"]} ml={["0","16"]}/>
 
   {/* Line Graph here */}
-  <LineChart/>
+  <LineChart views={stats.map( item=> item.views)}/>
 
 </Box>
 
@@ -95,9 +115,9 @@ const dashboard = () => {
            my={"8"}
   />
   <Box>
-    <Bar profit={true} title="Views" value={80}/>
-    <Bar profit={true} title="Users" value={62}/>
-    <Bar profit={false} title="Subscriptions" value={20}/>
+    <Bar profit={viewsProfit} title="Views" value={viewsPercentage}/>
+    <Bar profit={usersProfit} title="Users" value={usersPercentage}/>
+    <Bar profit={subscriptionProfit} title="Subscriptions" value={subscriptionPercentage}/>
   </Box>
 
   </Box>
@@ -107,18 +127,21 @@ const dashboard = () => {
 
     {/* Doubnut Graph */}
 
-    <DoubnutChart/>
+    <DoubnutChart users={[subscriptionCount, usersCount-subscriptionCount]}/>
   </Box>
 </Grid>
 
         </Box>
+            </>
+          )
+        }
        
     <AdminSideBar/>
     </Grid>
   )
 }
 
-export default dashboard;
+export default Dashboard;
 
 function LinkButtons({url,btnName,iconName,active}){
     return(

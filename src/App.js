@@ -67,7 +67,9 @@ useEffect(()=>{
   <Routes>
     <Route path="/" element={<Home />}/>
     <Route path="/courses" element={<Courses />}/>
-    <Route path="/courses/:id" element={<CoursePage/>}/>
+    <Route path="/course/:id" element={<ProtectedRoute isAuthenticated={isAuthenticated}>
+                                          <CoursePage user={user}/>
+                                        </ProtectedRoute>}/>
     <Route path="/contact" element={<Contact/>}/>
     <Route path="/request" element={<Request/>}/>
     <Route path="/about" element={<About/>}/>
@@ -87,7 +89,7 @@ useEffect(()=>{
     <Route path="*" element={<NotFound/>} />
 
     <Route path="/subscribe" element={<ProtectedRoute isAuthenticated={isAuthenticated}>
-                                        <Subscribe/>
+                                        <Subscribe user={user}/>
                                       </ProtectedRoute>}/>
     <Route path="/paymentsuccess" element={<PaymentSuccess/>}/>
     <Route path="/paymentfail" element={<PaymentFail/>}/>

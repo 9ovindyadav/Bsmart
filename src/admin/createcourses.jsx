@@ -1,7 +1,14 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { AdminSideBar } from './dashboard'
-import { Box, Button, Container, Grid, Heading, Image, Input, Select, VStack, color, useStatStyles } from '@chakra-ui/react'
+import { Button, Container, Grid, Heading, Image, Input, Select, VStack } from '@chakra-ui/react'
 import { fileUploadCss } from '../components/auth/register';
+import { useDispatch, useSelector } from 'react-redux';
+import { createCourse } from '../Redux/Actions/admin';
+import toast from "react-hot-toast";
+import { useNavigate } from 'react-router-dom';
+import { loadUser } from '../Redux/Actions/user';
+import { getAllCourses } from '../Redux/Actions/course';
+
 
 const CreateCourses = () => {
 
@@ -33,11 +40,40 @@ const Category = ["Web Development",
          ,setImage(file)  // file uploaded to it
     )
     }                   
+const dispatch = useDispatch();
+
+const {loading,message,error} = useSelector(state=>state.admin);
+
+const SubmitHandler = (e)=>{
+  e.preventDefault();
+
+  const myForm = new FormData();
+
+  myForm.append("title",title);       
+  myForm.append("description",description);
+  myForm.append("category",category);
+  myForm.append("createdBy",createdBy);
+  myForm.append("file",image);
+
+  dispatch(createCourse(myForm));
+dispatch(loadUser());
+};
+
+useEffect(()=>{
+  if(error){
+    toast.error(error);
+    dispatch({type:"clearError"});
+  }
+  if(message){
+    toast.success(message);
+    dispatch({type:"clearMessage"});
+  }
+},[dispatch,error,message])
 
   return (
     <Grid minH={"100vh"} templateColumns={["1fr","5fr 1fr"]}>
     <Container centerContent py={"16"}>
-      <form>
+      <form onSubmit={SubmitHandler}>
       <Heading children="Create Course" my={"16"} textAlign={["center","left"]}/>
     <VStack spacing={"3"}>
     <Input required t ype='text'
@@ -84,7 +120,7 @@ const Category = ["Web Development",
 
           {iamgePre && <Image objectFit={"contain"} boxSize={"48"} src={iamgePre} />}
 
-          <Button type='submit' colorScheme='purple' w={"full"}>Create</Button>
+          <Button isLoading={loading} type='submit' colorScheme='purple' w={"full"}>Create</Button>
     </VStack>
       </form>
     </Container>
